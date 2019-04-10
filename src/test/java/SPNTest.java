@@ -13,7 +13,22 @@ class SPNTest {
 
 
         //when
-        int[] spnSBOXED = spn.sbox(actual);
+        int[] spnSBOXED = spn.sbox(actual, false);
+
+        //then
+        assertEquals(spnSBOXED.length, 16);
+        assertArrayEquals(spnSBOXED, expected);
+    }
+    @Test
+    void sboxReversTest(){
+        //given
+        SPN spn = new SPN();
+        int[] actual = new int[]{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
+        int[] expected = new int[]{14, 4, 13, 1, 2, 15, 11, 8, 3, 10, 6, 12, 5, 9, 0, 7};
+
+
+        //when
+        int[] spnSBOXED = spn.sbox(actual, true);
 
         //then
         assertEquals(spnSBOXED.length, 16);
