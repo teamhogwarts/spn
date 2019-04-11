@@ -1,33 +1,31 @@
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Map;
 
 public class SPN {
+    int r;
+    int n;
+    int m;
+    int s;
+    int fullKey;
 
-
-    public static void main(String[] args) {
-        int r = 4;      //Rundenschlüssel
-        int n = 4;      //Anzahl Bit eines Blocks
-        int m = 4;      //Anzahl Blöcke
-        int s = 32;     //Länge des Schlüssel
-
-        final int fullKey = 0b0011_1010_1001_0100_1101_0110_0011_1111;
-        System.out.println(fullKey);
-
-        int[] keys = generateSpnKeys(fullKey, r, n);
-
-        System.out.println(hashSBOX.containsKey(14) + " " + hashSBOX.get(14));
-
-
-        System.out.println("-------------------------------" + fullKey);
-        for (int i = 0; i < keys.length; i++) {
-            System.out.println(Integer.toBinaryString(keys[i]));
-        }
-
-
+    public SPN(int r, int n, int m, int s, int fullKey) {
+        this.r = r;
+        this.n = n;
+        this.m = m;
+        this.s = s;
+        this.fullKey = fullKey;
     }
+    public SPN(){};
 
-    public static int[] generateSpnKeys(int fullKey, int rounds, int SizeOfBlock) {
+
+    /**
+     *
+     * @param fullKey
+     * @param rounds
+     * @param SizeOfBlock
+     * @return
+     */
+    public int[] generateSpnKeys(int fullKey, int rounds, int SizeOfBlock) {
         int[] keys = new int[rounds + 1];
         for (int i = 0; i < 5; i++) {
             int keyValue = (int) fullKey << SizeOfBlock * i;
@@ -38,7 +36,7 @@ public class SPN {
 
     public int[] sbox(int[] a, boolean reverse) {
         for (int i = 0; i < a.length; i++) {
-            if (reverse){
+            if (reverse) {
                 a[i] = hashSBOXrevers.get(a[i]);
             } else {
                 a[i] = hashSBOX.get(a[i]);
@@ -48,51 +46,40 @@ public class SPN {
         return a;
     }
 
-    public static byte getSBOXvalue(byte a, HashMap<Integer, Integer> sbox, boolean isInvers) {
+    public int bitpermutation(int bits, int n, int m, int[] bpValues) {
+       String bitString = Integer.toBinaryString(bits);
 
-        return a;
+        bitString = bitPaddingWithZeros(bitString, n,m);
+        String tempBitString = "";
+
+        for (int i = 0; i < bpValues.length; i++) {
+            System.out.println(bpValues[i]);
+            tempBitString += bitString.charAt(bpValues[i]);
+        }
+        System.out.println(tempBitString);
+        return Integer.parseInt(tempBitString,2);
     }
 
-    public int[] bitpermutation(int[] a) {
-
-        return a;
+    public String bitPaddingWithZeros(String bitString, int n, int m){
+        while (bitString.length() < n*m){
+            bitString = "0" + bitString;
+        }
+        return bitString;
     }
 
+
+    private static int[] bitpermutationValues = {0, 4, 8, 12, 1, 5, 9, 13, 2, 6, 10, 14, 3, 7, 11, 15};
+
+    private static int[] sBOXValues = {14, 4, 13, 1, 2, 15, 11, 8, 3, 10, 6, 12, 5, 9, 0, 7};
 
     private static final HashMap<Integer, Integer> hashSBOX = new HashMap<>() {{
-        put(0, 14);
-        put(1, 4);
-        put(2, 13);
-        put(3, 1);
-        put(4, 2);
-        put(5, 15);
-        put(6, 11);
-        put(7, 8);
-        put(8, 3);
-        put(9, 10);
-        put(10, 6);
-        put(11, 12);
-        put(12, 5);
-        put(13, 9);
-        put(14, 0);
-        put(15, 7);
+        for (int i = 0; i < sBOXValues.length; i++) {
+            put(i, sBOXValues[i]);
+        }
     }};
     private static final HashMap<Integer, Integer> hashSBOXrevers = new HashMap<>() {{
-        put(14, 0);
-        put(4, 1);
-        put(13, 2);
-        put(1, 3);
-        put(2, 4);
-        put(15, 5);
-        put(11, 6);
-        put(8, 7);
-        put(3, 8);
-        put(10, 9);
-        put(6, 10);
-        put(12, 11);
-        put(5, 12);
-        put(9, 13);
-        put(0, 14);
-        put(7, 15);
+        for (int i = 0; i < sBOXValues.length; i++) {
+            put(sBOXValues[i], i);
+        }
     }};
 }
