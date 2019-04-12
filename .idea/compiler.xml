@@ -9,5 +9,8 @@
         <module name="SPN" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="SPN" target="1.8" />
+    </bytecodeTargetLevel>
   </component>
 </project>
