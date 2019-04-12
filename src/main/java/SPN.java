@@ -45,7 +45,9 @@ public class SPN {
         }
         System.out.println("Verkürzte Runde");
         //verkürzte runde
+        arrX = intTOIntArray(intX);
         arrX = sbox(arrX, reverse);
+        intX = intArryToInt(arrX);
         System.out.println(" Letze SBOX = " + Integer.toBinaryString(intX));
         intX = intArryToInt(arrX)  ^ keys[keys.length-1];
 
