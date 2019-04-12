@@ -1,3 +1,5 @@
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 
@@ -6,13 +8,6 @@ import java.util.Arrays;
 import static org.junit.jupiter.api.Assertions.*;
 
 class SPNTest {
-
-
-    @Test
-    void bitPaddingZeroFillTest(){
-
-
-    }
 
     @Test
     void keysTest() {
@@ -45,12 +40,24 @@ class SPNTest {
     }
 
     @Test
+    void intToArrayTest(){
+        //given
+        SPN spn = new SPN();
+
+        int x = 0b1010_1111_0011_1100;
+        //when
+
+        int[] arrX = spn.intTOIntArray(x);
+        //then
+        System.out.println(Arrays.toString(arrX));
+    }
+
+    @Test
     void sboxTest() {
         //given
         SPN spn = new SPN();
         int[] actual = new int[]{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
         int[] expected = new int[]{14, 4, 13, 1, 2, 15, 11, 8, 3, 10, 6, 12, 5, 9, 0, 7};
-
 
         //when
         int[] spnSBOXED = spn.sbox(actual, false);
@@ -66,7 +73,6 @@ class SPNTest {
         SPN spn = new SPN();
         int[] actual = new int[]{14, 4, 13, 1, 2, 15, 11, 8, 3, 10, 6, 12, 5, 9, 0, 7};
         int[] expected = new int[]{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
-
 
         //when
         int[] spnSBOXED = spn.sbox(actual, true);
@@ -93,5 +99,4 @@ class SPNTest {
         //then
         assertEquals(expected, bitsAferBP);
     }
-
 }
