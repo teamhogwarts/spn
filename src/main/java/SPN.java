@@ -52,39 +52,31 @@ public class SPN {
 
         switch (a){
             case 0:
-                s = 33864;
+                s = 0b0001_0001_0010_1000;
+                break;
             case 1:
-                s = 35080;
+                s = 0b0001_0010_1000_1000;
+                break;
             case 2:
-                s = 73996;
+                s = 0b0010_1000_1000_1100;
+                break;
             case 3:
-                s = 270720;
+                s = 0b1000_1000_1100_0000;
+                break;
             case 4:
-                s = 274432;
+                s = 0b1000_1100_0000_0000;
         }
         return s;
     }
 
-    public static int[] convertToIntArray(int value) {
-        int[] array = new int[4];
-        System.out.println(toBinaryString(value));
-
-        array[0] = value >> 4*3;
-        System.out.println(toBinaryString(array[0]));
-
-        int v = value << 4*4;
-        array[1] = v >> 4*7;
-        System.out.println(toBinaryString(array[1]));
-
-        int v2 = value << 4*5;
-        array[2] = v2 >> 4*7;
-        System.out.println(toBinaryString(array[2]));
-
-        int v3 = value << 4*6;
-        array[3] = v3 >> 4*7;
-        System.out.println(toBinaryString(array[3]));
-
-        return array;
+    public static int[] convertToIntArray(int a) {
+        int[] intArray = new int[4];
+        int blockStart = 4;
+        for (int i = 0; i < intArray.length; i++) {
+            int actValue = a << blockStart++ * 4;
+            intArray[i] = actValue >>> 7 * 4;
+        }
+        return intArray;
     }
 
     public static int convertToInt(int[] array) {
@@ -143,7 +135,7 @@ public class SPN {
     }
 
     public static void main(String[] args) {
-        //System.out.println("is " + spn( 0b0001_0010_1000_1111) + " equals " +  "1010 1110 1011 0100: " + (spn(35087) == "1010111010110100"));
-        convertToIntArray(0b0001_0010_1000_1111);
+        System.out.println("is " + spn( 0b0001_0010_1000_1111) + " equals " +  "1010 1110 1011 0100: " + (spn(35087) == "1010111010110100"));
+
     }
 }
