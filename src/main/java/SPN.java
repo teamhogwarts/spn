@@ -14,24 +14,43 @@ public class SPN {
         this.m = m;
         this.s = s;
         this.fullKey = fullKey;
+
     }
     public SPN(){}
 
-    public int rounds(int x, int rounds , boolean reverse){
-        int tempX;
+    public int rounds(int x, boolean reverse){
+        int intX;
         int[] keys = generateSpnKeys(fullKey, r, n);
-        //initialer Weisschritt
-        tempX = keys[0] ^ x;
 
-        //reguläre runde
-        for (int i = 0; i < rounds; i++) {
-           // sbox(tempX, reverse);
+        for (int j = 0; j < keys.length; j++) {
+            System.out.println(j+"te Key = " + Integer.toBinaryString(keys[j]));
+
         }
 
+        //initialer Weisschritt
+        intX = keys[0] ^ x;
+        System.out.println("Weisschritt = " + Integer.toBinaryString(intX));
+        int[] arrX = intTOIntArray(intX);
+        //reguläre runde
+        for (int i = 1; i < r; i++) {
+            arrX = intTOIntArray(intX);
+           arrX = sbox(arrX, reverse);
+           intX = intArryToInt(arrX);
+           System.out.println(i + ". SBOX = " +Integer.toBinaryString(intX));
+           intX = bitpermutation(intX, n,m, bitpermutationValues);
+           System.out.println(i + ". BP = " + Integer.toBinaryString(intX));
+           intX = intX ^ keys[i];
+            System.out.println(i + ". Key = " + Integer.toBinaryString(keys[i]));
+           System.out.println(i + ". XOR = " + Integer.toBinaryString(intX));
+        }
+        System.out.println("Verkürzte Runde");
         //verkürzte runde
+        arrX = sbox(arrX, reverse);
+        System.out.println(" Letze SBOX = " + Integer.toBinaryString(intX));
+        intX = intArryToInt(arrX)  ^ keys[keys.length-1];
 
 
-        return 0; //return Chiffretext
+        return intX; //return Chiffretext
     }
 
     public int[] generateSpnKeys(int fullKey, int rounds, int SizeOfBlock) {
@@ -43,6 +62,8 @@ public class SPN {
         return keys;
     }
 
+
+
     public int[] sbox(int[] a, boolean reverse) {
         for (int i = 0; i < a.length; i++) {
             if (reverse) {
@@ -53,16 +74,7 @@ public class SPN {
         }
         return a;
     }
-    private static final HashMap<Integer, Integer> hashSBOX = new HashMap<>() {{
-        for (int i = 0; i < sBOXValues.length; i++) {
-            put(i, sBOXValues[i]);
-        }
-    }};
-    private static final HashMap<Integer, Integer> hashSBOXrevers = new HashMap<>() {{
-        for (int i = 0; i < sBOXValues.length; i++) {
-            put(sBOXValues[i], i);
-        }
-    }};
+
 
     public int bitpermutation(int bits, int n, int m, int[] bpValues) {
        String bitString = Integer.toBinaryString(bits);
@@ -71,7 +83,6 @@ public class SPN {
         String tempBitString = "";
 
         for (int i = 0; i < bpValues.length; i++) {
-            System.out.println(bpValues[i]);
             tempBitString += bitString.charAt(bpValues[i]);
         }
         return Integer.parseInt(tempBitString,2);
@@ -84,22 +95,36 @@ public class SPN {
         return bitString;
     }
 
-    private static int intArryToInt(int[] a){
-        return 0;
-    }
     public static int[] intTOIntArray(int a){
         int[] intArray = new int[4];
-        int intBlockDown = 3;
+        int blockStart = 4;
         for (int i = 0; i < intArray.length; i++) {
-            int keyValue = (int) a << intBlockDown * i;
-            intArray[i] = keyValue >>> 4*intBlockDown;
+            int actValue = a << blockStart++ * 4;
+            intArray[i] = actValue >>> 7 * 4;
         }
         return intArray;
+    }
+
+    public static int intArryToInt(int[] a){
+        int result = a[0];
+        for (int i = 1; i < a.length; i++) {
+            result = (result << 4) ^ a[i];
+        }
+        return result;
     }
 
     private static int[] bitpermutationValues = {0, 4, 8, 12, 1, 5, 9, 13, 2, 6, 10, 14, 3, 7, 11, 15};
 
     private static int[] sBOXValues = {14, 4, 13, 1, 2, 15, 11, 8, 3, 10, 6, 12, 5, 9, 0, 7};
 
-
+    private static final HashMap<Integer, Integer> hashSBOX = new HashMap<>() {{
+        for (int i = 0; i < sBOXValues.length; i++) {
+            put(i, sBOXValues[i]);
+        }
+    }};
+    private static final HashMap<Integer, Integer> hashSBOXrevers = new HashMap<>() {{
+        for (int i = 0; i < sBOXValues.length; i++) {
+            put(sBOXValues[i], i);
+        }
+    }};
 }

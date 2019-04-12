@@ -1,5 +1,4 @@
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
+
 import org.junit.jupiter.api.Test;
 
 
@@ -50,6 +49,27 @@ class SPNTest {
         int[] arrX = spn.intTOIntArray(x);
         //then
         System.out.println(Arrays.toString(arrX));
+        assertEquals( 0b1010, arrX[0]);
+        assertEquals( 0b1111, arrX[1]);
+        assertEquals( 0b0011, arrX[2]);
+        assertEquals( 0b1100, arrX[3]);
+
+    }
+    @Test
+    void intArrayToIntTest(){
+        //given
+        SPN spn = new SPN();
+
+        int[] intArray = {0b1010, 0b1111, 0b0011, 0b1100};
+        int expect = 0b1010_1111_0011_1100;
+
+
+        //when
+        int result = spn.intArryToInt(intArray);
+
+
+        //then
+       assertEquals( expect, result);
     }
 
     @Test
@@ -92,6 +112,24 @@ class SPNTest {
         int m = 4;
         int actual   = 0b0011_1010_1001_0100;
         int expected = 0b0110_0001_1100_1010;
+
+        //when
+        int bitsAferBP = spn.bitpermutation(actual, n, m, bitpermutationValues);
+
+        //then
+        assertEquals(expected, bitsAferBP);
+    }
+
+    @Test
+    void bitpermutationTest2() {
+        //given
+        SPN spn = new SPN();
+        int[] bitpermutationValues = new int[]{0, 4, 8, 12, 1, 5, 9, 13, 2, 6, 10, 14, 3, 7, 11, 15};
+
+        int n = 4;
+        int m = 4;
+        int actual   = 0b1110_0001_0110_1000;
+        int expected = 0b1001_1010_1010_0100;
 
         //when
         int bitsAferBP = spn.bitpermutation(actual, n, m, bitpermutationValues);
