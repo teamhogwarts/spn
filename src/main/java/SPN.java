@@ -16,14 +16,16 @@ public class SPN {
         this.fullKey = fullKey;
 
     }
-    public SPN(){}
 
-    public int rounds(int x, boolean reverse){
+    public SPN() {
+    }
+
+    public int rounds(int x, boolean reverse) {
         int intX;
         int[] keys = generateSpnKeys(fullKey, r, n);
 
         for (int j = 0; j < keys.length; j++) {
-            System.out.println(j+"te Key = " + Integer.toBinaryString(keys[j]));
+            System.out.println(j + "te Key = " + Integer.toBinaryString(keys[j]));
 
         }
 
@@ -34,14 +36,14 @@ public class SPN {
         //reguläre runde
         for (int i = 1; i < r; i++) {
             arrX = intTOIntArray(intX);
-           arrX = sbox(arrX, reverse);
-           intX = intArryToInt(arrX);
-           System.out.println(i + ". SBOX = " +Integer.toBinaryString(intX));
-           intX = bitpermutation(intX, n,m, bitpermutationValues);
-           System.out.println(i + ". BP = " + Integer.toBinaryString(intX));
-           intX = intX ^ keys[i];
+            arrX = sbox(arrX, reverse);
+            intX = intArryToInt(arrX);
+            System.out.println(i + ". SBOX = " + Integer.toBinaryString(intX));
+            intX = bitpermutation(intX, n, m, bitpermutationValues);
+            System.out.println(i + ". BP = " + Integer.toBinaryString(intX));
+            intX = intX ^ keys[i];
             System.out.println(i + ". Key = " + Integer.toBinaryString(keys[i]));
-           System.out.println(i + ". XOR = " + Integer.toBinaryString(intX));
+            System.out.println(i + ". XOR = " + Integer.toBinaryString(intX));
         }
         System.out.println("Verkürzte Runde");
         //verkürzte runde
@@ -49,7 +51,7 @@ public class SPN {
         arrX = sbox(arrX, reverse);
         intX = intArryToInt(arrX);
         System.out.println(" Letze SBOX = " + Integer.toBinaryString(intX));
-        intX = intArryToInt(arrX)  ^ keys[keys.length-1];
+        intX = intArryToInt(arrX) ^ keys[keys.length - 1];
 
 
         return intX; //return Chiffretext
@@ -65,7 +67,6 @@ public class SPN {
     }
 
 
-
     public int[] sbox(int[] a, boolean reverse) {
         for (int i = 0; i < a.length; i++) {
             if (reverse) {
@@ -79,25 +80,25 @@ public class SPN {
 
 
     public int bitpermutation(int bits, int n, int m, int[] bpValues) {
-       String bitString = Integer.toBinaryString(bits);
+        String bitString = Integer.toBinaryString(bits);
 
-        bitString = bitPaddingWithZeros(bitString, n,m);
+        bitString = bitPaddingWithZeros(bitString, n, m);
         String tempBitString = "";
 
         for (int i = 0; i < bpValues.length; i++) {
             tempBitString += bitString.charAt(bpValues[i]);
         }
-        return Integer.parseInt(tempBitString,2);
+        return Integer.parseInt(tempBitString, 2);
     }
 
-    public String bitPaddingWithZeros(String bitString, int n, int m){
-        while (bitString.length() < n*m){
+    public String bitPaddingWithZeros(String bitString, int n, int m) {
+        while (bitString.length() < n * m) {
             bitString = "0" + bitString;
         }
         return bitString;
     }
 
-    public static int[] intTOIntArray(int a){
+    public static int[] intTOIntArray(int a) {
         int[] intArray = new int[4];
         int blockStart = 4;
         for (int i = 0; i < intArray.length; i++) {
@@ -107,7 +108,7 @@ public class SPN {
         return intArray;
     }
 
-    public static int intArryToInt(int[] a){
+    public static int intArryToInt(int[] a) {
         int result = a[0];
         for (int i = 1; i < a.length; i++) {
             result = (result << 4) ^ a[i];

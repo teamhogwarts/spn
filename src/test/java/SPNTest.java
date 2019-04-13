@@ -137,4 +137,27 @@ class SPNTest {
         //then
         assertEquals(expected, bitsAferBP);
     }
+
+    @Test
+    void roundSPNTest(){
+        //given
+        int r = 4;      //Rundenschlüssel
+        int n = 4;      //Anzahl Bit eines Blocks
+        int m = 4;      //Anzahl Blöcke
+        int s = 32;     //Länge des Schlüssel
+
+        final int testKey = 0b0001_0001_0010_1000_1000_1100_0000_0000;
+        final int testX = 0b0001_0010_1000_1111;
+
+        SPN spn = new SPN(r,n,m,s, testKey);
+
+        //when
+        int result = spn.rounds(testX, false);
+
+        int expected = 0b1010_1110_1011_0100;
+        //then
+
+        assertEquals(expected,result);
+
+    }
 }
