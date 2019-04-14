@@ -17,8 +17,8 @@ public class SPN {
         this.m = m;
         this.s = s;
         this.bitpermutationHashMap = generateBitPermutationsHashMap(bpValues);
-        this.keys = generateSpnKeys(fullKey, r, n);
-
+        this.keys = generateSpnKeys(fullKey);
+        this.keysReverse = generateSpnKeysReverse();
 
         for (int j = 0; j < keys.length; j++) {
             System.out.println(j + "te Key = " + Integer.toBinaryString(keys[j]));
@@ -38,7 +38,7 @@ public class SPN {
             arrX = sbox(arrX, reverse);
             intX = intArryToInt(arrX);
             System.out.println(i + ". SBOX = " + Integer.toBinaryString(intX));
-//            intX = bitpermutation(intX);
+            intX = intBitpermutation(intX);
             System.out.println(i + ". BP = " + Integer.toBinaryString(intX));
             intX = intX ^ keys[i];
             System.out.println(i + ". Key = " + Integer.toBinaryString(keys[i]));
@@ -56,45 +56,28 @@ public class SPN {
         return intX;
     }
 
-    public int[] generateSpnKeys(int fullKey, int rounds, int SizeOfBlock) {
-        int[] keys = new int[rounds + 1];
+    public int[] generateSpnKeys(int fullKey) {
+        int[] keys = new int[getAmountRound() + 1];
         for (int i = 0; i < 5; i++) {
-            int keyValue = (int) fullKey << SizeOfBlock * i;
-            keys[i] = keyValue >>> SizeOfBlock * SizeOfBlock;
+            int keyValue = (int) fullKey << getN() * i;
+            keys[i] = keyValue >>> getN() * getN();
         }
         return keys;
     }
 
-    public int[] generateSpnKeysReverse(int[] regKeys, int n, int m) {
+    public int[] generateSpnKeysReverse() {
 
-        System.out.println("n: " + n + " m:" + m + " bp: " + bitpermutationHashMap.values().toString());
-
+        int[] regKeys = getKeys();
         int[] keyReserve = new int[regKeys.length];
-
         int lastIndex = regKeys.length - 1;
 
         keyReserve[0] = regKeys[lastIndex];
         keyReserve[lastIndex] = regKeys[0];
 
-        System.out.println("Array keyReserve: " + Arrays.toString(keyReserve));
-        System.out.println("Array regKeys: " + Arrays.toString(regKeys));
+        for (int i = 1; i < regKeys.length-1; i++) {
+            keyReserve[i] = intBitpermutation(regKeys[lastIndex-i]);
+        }
 
-//        System.out.println("regKeys[1] before BP: " + Integer.toBinaryString(regKeys[1]));
-//        System.out.println("regKeys[1] after BP: " + Integer.toBinaryString(bitpermutation(regKeys[1], n,m, getBP())));
-//
-//        System.out.println("regKeys[2] before BP: " + Integer.toBinaryString(regKeys[2]));
-//        System.out.println("regKeys[2] after BP: " + Integer.toBinaryString(bitpermutation(regKeys[2], n,m, getBP())));
-//
-//
-//        System.out.println("regKeys[3] before BP: " + Integer.toBinaryString(regKeys[3]));
-//        System.out.println("regKeys[3] after BP: " + Integer.toBinaryString(bitpermutation(regKeys[3], n,m, getBP())));
-
-//       keyReserve[3] = bitpermutation(regKeys[1], n,m, bitpermutationHashMap);
-//        keyReserve[2] = bitpermutation(regKeys[2], n,m, bitpermutationHashMap);
-//        for (int i = 1; i < regKeys.length-1; i++) {
-//            keyReserve[i] = bitpermutation(regKeys[lastIndex-i], n,m, bitpermutationHashMap);
-//        }
-        System.out.println("Array keyReserve: " + Arrays.toString(keyReserve));
         return keyReserve;
     }
 
@@ -110,85 +93,24 @@ public class SPN {
     }
 
 
-    public int bitpermutation(int bits, int n, int m, int[] bpValues) {
-        String bitString = Integer.toBinaryString(bits);
-
-        System.out.println(bitString + " length: " + bitString.length());
-
-        bitString = bitPaddingWithZeros(bitString, n, m);
-
-        System.out.println(bitString + " length: " + bitString.length());
-
-        String tempBitString = "";
-        for (int i = 0; i < bpValues.length; i++) {
-            tempBitString += bitString.charAt(bpValues[i]);
-        }
-        return Integer.parseInt(tempBitString, 2);
-    }
-
     public int intBitpermutation(final int bits) {
-        //  {0, 4, 8, 12, 1, 5, 9, 13, 2, 6, 10, 14, 3, 7, 11, 15};
         int higestBit = (getN() * getM());
-        System.out.println("High Bit Amount: " + higestBit);
-        int resultBitMask = 0;
-        int checkBitValue = 0;
+        int resultBitMask = 0, checkBitValue;
 
-//        resultBitMask = resultBitMask | checkBitValue >> bitpermutationHashMap.get(0);
-//        System.out.println("Result: " + Integer.toBinaryString(resultBitMask));
-//
-//        higestBit = higestBit - 1;
-//        System.out.println("High Bit Amount: " + higestBit);
-//
-//        checkBitValue = bits & (int) Math.pow(2, higestBit);
-//        resultBitMask = resultBitMask | checkBitValue >> bitpermutationHashMap.get(1);
-//        System.out.println("Result: " + Integer.toBinaryString(resultBitMask));
-//
-//        higestBit = higestBit - 1;
-//        System.out.println("High Bit Amount: " + higestBit);
-//        checkBitValue = bits & (int) Math.pow(2, higestBit);
-//        resultBitMask = resultBitMask | checkBitValue >> bitpermutationHashMap.get(2);
-//        System.out.println("Result: " + Integer.toBinaryString(resultBitMask));
-
-        System.out.println("size" + bitpermutationHashMap.size());
-        System.out.println(Integer.toBinaryString(bits));
         for (int i = 0; i < bitpermutationHashMap.size(); i++) {
-
-            System.out.println(i + ".");
             higestBit--;
-            System.out.println("High Bit Amount: 2^" +  higestBit +" = " + Integer.toBinaryString((int) Math.pow(2, higestBit)));
             checkBitValue = bits & (int) Math.pow(2, higestBit);
 
-            System.out.println("checkbitValue: " +Integer.toBinaryString(checkBitValue));
-//                    +
-
-
-            if(i > bitpermutationHashMap.get(i)){
-
-                System.out.println(" BPV:" +bitpermutationHashMap.get(i) + " << " + Math.abs(bitpermutationHashMap.get(i) - i) + " = " + Integer.toBinaryString (checkBitValue << (bitpermutationHashMap.get(i) - i)));
-                checkBitValue =  checkBitValue << Math.abs(bitpermutationHashMap.get(i) - i);
-            } else {
-                System.out.println(" BPV:" +bitpermutationHashMap.get(i) + " >>> " + (bitpermutationHashMap.get(i) - i) + " = " + Integer.toBinaryString (checkBitValue >>> (bitpermutationHashMap.get(i) - i)));
-                checkBitValue = checkBitValue >>> (bitpermutationHashMap.get(i) - i);
-            }
+            checkBitValue = (i > bitpermutationHashMap.get(i)) ?
+                    checkBitValue << Math.abs(bitpermutationHashMap.get(i) - i) :
+                    checkBitValue >>> (bitpermutationHashMap.get(i) - i);
 
             resultBitMask = resultBitMask ^ checkBitValue;
-
-            System.out.println("ResultBitMask: " +Integer.toBinaryString(resultBitMask));
-            System.out.println("---------------------");
         }
 
         return resultBitMask;
     }
 
-    public String bitPaddingWithZeros(String bitString, int n, int m) {
-        while (bitString.length() < n * m) {
-            bitString = "0" + bitString;
-        }
-//        assert bitString.length() != n*m : bitString + " mit Länge " + bitString.length() +" hat nicht die Länge von " + n*m;
-        if (bitString.length() != n * m)
-            System.out.println("ERROR: " + bitString + " mit Länge " + bitString.length() + " hat nicht die Länge von " + n * m);
-        return bitString;
-    }
 
     public static int[] intTOIntArray(int a) {
         int[] intArray = new int[4];
@@ -242,5 +164,17 @@ public class SPN {
 
     public int getM() {
         return this.m;
+    }
+
+    public int getAmountRound() {
+        return this.r;
+    }
+
+    public int[] getKeys() {
+        return this.keys;
+    }
+
+    public int[] getKeysReverse() {
+        return this.keysReverse;
     }
 }
