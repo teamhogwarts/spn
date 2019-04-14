@@ -26,31 +26,32 @@ public class SPN {
     }
 
 
-    public int rounds(int x, boolean reverse) {
+    public int startSPN(int x, boolean inverse) {
 
+        int[] usedKeys = (inverse)? getKeysReverse() : getKeys();
         //initialer Weisschritt
-        int intX = keys[0] ^ x;
+        int intX = usedKeys[0] ^ x;
         System.out.println("Weisschritt XOR = " + Integer.toBinaryString(intX));
         int[] arrX = intTOIntArray(intX);
         //reguläre runde
         for (int i = 1; i < r; i++) {
             arrX = intTOIntArray(intX);
-            arrX = sbox(arrX, reverse);
+            arrX = sbox(arrX, inverse);
             intX = intArryToInt(arrX);
             System.out.println(i + ". SBOX = " + Integer.toBinaryString(intX));
             intX = intBitpermutation(intX);
             System.out.println(i + ". BP = " + Integer.toBinaryString(intX));
-            intX = intX ^ keys[i];
-            System.out.println(i + ". Key = " + Integer.toBinaryString(keys[i]));
+            intX = intX ^ usedKeys[i];
+            System.out.println(i + ". Key = " + Integer.toBinaryString(usedKeys[i]));
             System.out.println(i + ". XOR = " + Integer.toBinaryString(intX));
         }
         System.out.println("Verkürzte Runde");
         //verkürzte runde
         arrX = intTOIntArray(intX);
-        arrX = sbox(arrX, reverse);
+        arrX = sbox(arrX, inverse);
         intX = intArryToInt(arrX);
         System.out.println("Verk. Runde SBOX = " + Integer.toBinaryString(intX));
-        intX = intArryToInt(arrX) ^ keys[keys.length - 1];
+        intX = intArryToInt(arrX) ^ usedKeys[usedKeys.length - 1];
         System.out.println("Verk. Runde XOR = " + Integer.toBinaryString(intX));
 
         return intX;
@@ -81,13 +82,9 @@ public class SPN {
         return keyReserve;
     }
 
-    public int[] sbox(int[] a, boolean reverse) {
+    public int[] sbox(int[] a, boolean inverse) {
         for (int i = 0; i < a.length; i++) {
-            if (reverse) {
-                a[i] = hashSBOXrevers.get(a[i]);
-            } else {
-                a[i] = hashSBOX.get(a[i]);
-            }
+            a[i] = (inverse)? hashSBOXrevers.get(a[i]) : hashSBOX.get(a[i]);
         }
         return a;
     }
@@ -107,7 +104,6 @@ public class SPN {
 
             resultBitMask = resultBitMask ^ checkBitValue;
         }
-
         return resultBitMask;
     }
 

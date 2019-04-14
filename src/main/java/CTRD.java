@@ -33,7 +33,7 @@ public class CTRD {
             System.out.println(xi + " = y-1 + "+i+ " mod " + (int) Math.pow(2, this.length));
 
             System.out.println("Start SPN mit: x"+ i + " = " + xi);
-            xi = system.rounds(xi, false);
+            xi = system.startSPN(xi, false);
             System.out.println("Ende SPN mit: x"+ i + " = " + xi + " / " + Integer.toBinaryString(xi));
             xi = xi ^ yi[i];
             System.out.println((xi ^ yi[i]) + " = x" + i + " XOR y" + i+ " (" + yi[i] + " / " + Integer.toBinaryString(yi[i]) +")");

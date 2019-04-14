@@ -4,8 +4,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 
-import java.util.Arrays;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 class SPNTest {
@@ -153,7 +151,7 @@ class SPNTest {
     }
 
     @Test
-    void roundSPNTest() {
+    void runSPNTest() {
         //given
         final int testKey = 0b0001_0001_0010_1000_1000_1100_0000_0000;
         final int testX = 0b0001_0010_1000_1111;
@@ -161,11 +159,28 @@ class SPNTest {
         SPN spnTestKey = new SPN(r, n, m, s, testKey, bitpermutationValues);
 
         //when
-        int result = spnTestKey.rounds(testX, false);
+        int result = spnTestKey.startSPN(testX, false);
         int expected = 0b1010_1110_1011_0100;
 
         //then
         assertEquals(expected, result);
+    }
+
+    @Test
+    void runSPNInverseTest(){
+        //given
+        final int testKey = 0b0001_0001_0010_1000_1000_1100_0000_0000;
+        final int testX = 0b0001_0010_1000_1111;
+
+        SPN spnTestKey = new SPN(r, n, m, s, testKey, bitpermutationValues);
+
+        //when
+        int result = spnTestKey.startSPN(testX, true);
+        int expected = 0b1010_1110_1011_0100;
+
+        //then
+        assertEquals(expected, result);
+
     }
 
 }

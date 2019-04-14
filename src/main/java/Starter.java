@@ -17,7 +17,7 @@ public class Starter {
 
         SPN spn = new SPN(r,n,m,s, testKey, bitpermutationValues);
 
-        int y = spn.rounds(testX, false);
+        int y = spn.startSPN(testX, false);
 
         System.out.println("y = " + Integer.toBinaryString(y));
 
