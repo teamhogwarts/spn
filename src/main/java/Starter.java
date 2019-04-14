@@ -5,6 +5,8 @@ public class Starter {
         int n = 4;      //Anzahl Bit eines Blocks
         int m = 4;      //Anzahl Blöcke
         int s = 32;     //Länge des Schlüssel
+        int[] bitpermutationValues = {0, 4, 8, 12, 1, 5, 9, 13, 2, 6, 10, 14, 3, 7, 11, 15};
+
 
        // final int fullKey = 0b0011_1010_1001_0100_1101_0110_0011_1111;
 
@@ -13,7 +15,7 @@ public class Starter {
 
 
 
-        SPN spn = new SPN(r,n,m,s, testKey);
+        SPN spn = new SPN(r,n,m,s, testKey, bitpermutationValues);
 
         int y = spn.rounds(testX, false);
 
