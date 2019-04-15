@@ -44,22 +44,16 @@ public class CTRD {
 //            System.out.println(" -----------------------");
         }
 
-//        System.out.println(Arrays.toString(resultX));
-
         System.out.println(Arrays.toString(resultX));
 
         // entfernen das letzte mit dem Pattern 1er gefüllt mit 0er
         resultX[resultX.length - 1] = Integer.numberOfTrailingZeros(resultX[resultX.length - 1] + 1);
 
-        System.out.println(Arrays.toString(resultX));
-
         char[] chars = new char[resultX.length * 2];
-        int j = 0;
         for (int i = 0; i < chars.length; i++) {
-            chars[i] = (char) (resultX[j] >>> 8);
+            chars[i] = (char) (resultX[i/2] >>> 8);
             i++;
-            chars[i] = (char) (resultX[j] & 0b00000_0000_1111_1111);
-            j++;
+            chars[i] = (char) (resultX[i/2] & 0b00000_0000_1111_1111);
         }
 
         return new String(chars).trim();

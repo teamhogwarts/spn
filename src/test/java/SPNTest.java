@@ -10,6 +10,7 @@ class SPNTest {
 
     SPN spn;
     int[] bitpermutationValues;
+    int[] sBOXValues;
     int r;
     int n;
     int m;
@@ -19,6 +20,7 @@ class SPNTest {
     @BeforeEach
     void beforeEachTest() {
         bitpermutationValues = new int[]{0, 4, 8, 12, 1, 5, 9, 13, 2, 6, 10, 14, 3, 7, 11, 15};
+        sBOXValues = new int[]{14, 4, 13, 1, 2, 15, 11, 8, 3, 10, 6, 12, 5, 9, 0, 7};
         fullKey = 0b0011_1010_1001_0100_1101_0110_0011_1111;
 
         r = 4;      //Rundenschlüssel
@@ -26,7 +28,7 @@ class SPNTest {
         m = 4;      //Anzahl Blöcke
         s = 32;     //Länge des Schlüssel in Bit
 
-        spn = new SPN(r, n, m, s, fullKey, bitpermutationValues);
+        spn = new SPN(r, n, m, s, fullKey, bitpermutationValues, sBOXValues);
     }
 
     @AfterEach
@@ -156,7 +158,7 @@ class SPNTest {
         final int testKey = 0b0001_0001_0010_1000_1000_1100_0000_0000;
         final int testX = 0b0001_0010_1000_1111;
 
-        SPN spnTestKey = new SPN(r, n, m, s, testKey, bitpermutationValues);
+        SPN spnTestKey = new SPN(r, n, m, s, testKey, bitpermutationValues, sBOXValues);
 
         //when
         int result = spnTestKey.startSPN(testX, false);
@@ -172,7 +174,7 @@ class SPNTest {
         final int testKey = 0b0001_0001_0010_1000_1000_1100_0000_0000;
         final int testX = 0b0001_0010_1000_1111;
 
-        SPN spnTestKey = new SPN(r, n, m, s, testKey, bitpermutationValues);
+        SPN spnTestKey = new SPN(r, n, m, s, testKey, bitpermutationValues, sBOXValues);
 
         //when
         int result = spnTestKey.startSPN(testX, true);
