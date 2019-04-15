@@ -1,6 +1,8 @@
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class CTRDTest {
@@ -52,16 +54,14 @@ class CTRDTest {
         //CTRD wird initalisiert mit Daten und dem SPN-System
         CTRD ctrd = new CTRD(chiffreText, 16, spn);
 
-        String[] actual = ctrd.decrypt();
-
-
 
         //when
+        String actual = ctrd.decrypt();
 
-
+        String exepted = "Gut gemacht!";
 
         //then
-
+        assertEquals(actual, exepted);
     }
 
 }

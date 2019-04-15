@@ -8,7 +8,7 @@ public class SPN {
     private int[] keys; //Schlüssel-Reihenfolge bei ENCRYPT
     private int[] keysReverse; //Schlüssel-Reihenfolge bei DECRYPT
     private HashMap<Integer, Integer> bitpermutationHashMap;
-
+    private HashMap<Integer, Integer> sBoxHashMap;
 
     public SPN(int r, int n, int m, int s, int fullKey, int[] bpValues) {
         this.r = r;
@@ -88,7 +88,6 @@ public class SPN {
         return a;
     }
 
-
     public int bitPermutation(final int bits) {
         int higestBit = (getN() * getM());
         int resultBitMask = 0, checkBitValue;
@@ -105,7 +104,6 @@ public class SPN {
         }
         return resultBitMask;
     }
-
 
     public static int[] intTOIntArray(int a) {
         int[] intArray = new int[4];
@@ -142,6 +140,7 @@ public class SPN {
             put(i, sBOXValues[i]);
         }
     }};
+
     private static final HashMap<Integer, Integer> hashSBOXrevers = new HashMap<>() {{
         for (int i = 0; i < sBOXValues.length; i++) {
             put(sBOXValues[i], i);

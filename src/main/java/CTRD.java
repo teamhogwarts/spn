@@ -15,6 +15,8 @@ public class CTRD {
         this.length = length;
         this.system = system;
 
+        System.out.println("Length: " + length);
+
         System.out.println("y-1 =" + Integer.toBinaryString(this.yMinus1));
         for (int i = 0; i < this.yi.length; i++) {
             System.out.println("y" + i + " =" + Integer.toBinaryString(this.yi[i]));
@@ -24,34 +26,43 @@ public class CTRD {
     public CTRD() {
     }
 
-    public String[] decrypt() {
+    public String decrypt() {
 
-        String[] resultX = new String[yi.length];
+        int[] resultX = new int[yi.length];
 
         for (int i = 0; i < yi.length; i++) {
-            int xi = (this.yMinus1 + i) % (int) Math.pow(2, this.length);
-            System.out.println(xi + " = y-1 + "+i+ " mod " + (int) Math.pow(2, this.length));
+            int xi = (this.yMinus1 + i) % (1 << this.length); //(int) Math.pow(2, this.length);
+//            System.out.println(xi + " = y-1 + "+i+ " mod " + (int) Math.pow(2, this.length));
 
-            System.out.println("Start SPN mit: x"+ i + " = " + xi);
+//            System.out.println("Start SPN mit: x"+ i + " = " + xi);
             xi = system.startSPN(xi, false);
-            System.out.println("Ende SPN mit: x"+ i + " = " + xi + " / " + Integer.toBinaryString(xi));
+//            System.out.println("Ende SPN mit: x"+ i + " = " + xi + " / " + Integer.toBinaryString(xi));
             xi = xi ^ yi[i];
-            System.out.println((xi ^ yi[i]) + " = x" + i + " XOR y" + i+ " (" + yi[i] + " / " + Integer.toBinaryString(yi[i]) +")");
-            resultX[i] = Integer.toBinaryString(xi);
-            System.out.println("x" + i + " = " + resultX[i]);
-            System.out.println(" -----------------------");
+//            System.out.println((xi ^ yi[i]) + " = x" + i + " XOR y" + i+ " (" + yi[i] + " / " + Integer.toBinaryString(yi[i]) +")");
+            resultX[i] = xi;
+//            System.out.println("x" + i + " = " + resultX[i]);
+//            System.out.println(" -----------------------");
         }
+
+//        System.out.println(Arrays.toString(resultX));
 
         System.out.println(Arrays.toString(resultX));
 
-        return resultX;
-    }
+        // entfernen das letzte mit dem Pattern 1er gefüllt mit 0er
+        resultX[resultX.length - 1] = Integer.numberOfTrailingZeros(resultX[resultX.length - 1] + 1);
 
+        System.out.println(Arrays.toString(resultX));
 
-    public char intToASCII(int bit16){
-//        first-+
+        char[] chars = new char[resultX.length * 2];
+        int j = 0;
+        for (int i = 0; i < chars.length; i++) {
+            chars[i] = (char) (resultX[j] >>> 8);
+            i++;
+            chars[i] = (char) (resultX[j] & 0b00000_0000_1111_1111);
+            j++;
+        }
 
-        return '1';
+        return new String(chars).trim();
     }
 
 
