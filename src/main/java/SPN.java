@@ -1,4 +1,3 @@
-import java.util.Arrays;
 import java.util.HashMap;
 
 public class SPN {
@@ -39,7 +38,7 @@ public class SPN {
             arrX = sbox(arrX, inverse);
             intX = intArryToInt(arrX);
             System.out.println(i + ". SBOX = " + Integer.toBinaryString(intX));
-            intX = intBitpermutation(intX);
+            intX = bitPermutation(intX);
             System.out.println(i + ". BP = " + Integer.toBinaryString(intX));
             intX = intX ^ usedKeys[i];
             System.out.println(i + ". Key = " + Integer.toBinaryString(usedKeys[i]));
@@ -76,7 +75,7 @@ public class SPN {
         keyReserve[lastIndex] = regKeys[0];
 
         for (int i = 1; i < regKeys.length-1; i++) {
-            keyReserve[i] = intBitpermutation(regKeys[lastIndex-i]);
+            keyReserve[i] = bitPermutation(regKeys[lastIndex-i]);
         }
 
         return keyReserve;
@@ -90,13 +89,13 @@ public class SPN {
     }
 
 
-    public int intBitpermutation(final int bits) {
+    public int bitPermutation(final int bits) {
         int higestBit = (getN() * getM());
         int resultBitMask = 0, checkBitValue;
 
         for (int i = 0; i < bitpermutationHashMap.size(); i++) {
             higestBit--;
-            checkBitValue = bits & (int) Math.pow(2, higestBit);
+            checkBitValue = bits & (1 << higestBit);
 
             checkBitValue = (i > bitpermutationHashMap.get(i)) ?
                     checkBitValue << Math.abs(bitpermutationHashMap.get(i) - i) :

@@ -48,6 +48,13 @@ public class CTRD {
     }
 
 
+    public char intToASCII(int bit16){
+//        first-+
+
+        return '1';
+    }
+
+
     //zerlege Y in Blöcke der Länge "laenge" zerlegen = y-1, y0, y1 ....yn-1
     public static int[] zerlegenVonY(String XY, int length) {
         int amountOfBlocks = XY.length() / length; // 128 / 16 = 8

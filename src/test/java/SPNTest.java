@@ -131,7 +131,7 @@ class SPNTest {
         int expected = 0b0110_0001_1100_1010;
 
         //when
-        int bitsAferBP = spn.intBitpermutation(actual);
+        int bitsAferBP = spn.bitPermutation(actual);
 
         //then
         assertEquals(expected, bitsAferBP);
@@ -144,7 +144,7 @@ class SPNTest {
         int expected = 0b1001_1010_1010_0100;
 
         //when
-        int bitsAferBP = spn.intBitpermutation(actual);
+        int bitsAferBP = spn.bitPermutation(actual);
 
         //then
         assertEquals(expected, bitsAferBP);
