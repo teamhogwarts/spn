@@ -16,9 +16,9 @@ public class SPN {
         this.n = n;
         this.m = m;
         this.s = s;
-        this.bitpermutationHashMap = generateBitPermutationsHashMap(bpValues);
-        this.sBoxHashMap = generateSBOXHashMap(sBoxValues, false);
-        this.sBoxReverseHashMap = generateSBOXHashMap(sBoxValues, true);
+        this.bitpermutationHashMap = generateHashMap(bpValues, false);
+        this.sBoxHashMap = generateHashMap(sBoxValues, false);
+        this.sBoxReverseHashMap = generateHashMap(sBoxValues, true);
         this.keys = generateSpnKeys(fullKey);
         this.keysReverse = generateSpnKeysReverse();
 
@@ -34,12 +34,12 @@ public class SPN {
         //initialer Weisschritt
         int intX = usedKeys[0] ^ x;
         System.out.println("Weisschritt XOR = " + Integer.toBinaryString(intX));
-        int[] arrX = intTOIntArray(intX);
+        int[] arrX;
         //reguläre runde
         for (int i = 1; i < r; i++) {
-            arrX = intTOIntArray(intX);
-            arrX = sbox(arrX, inverse);
-            intX = intArryToInt(arrX);
+            arrX = intToIntArray(intX);
+            arrX = sBox(arrX, inverse);
+            intX = intArrayToInt(arrX);
             System.out.println(i + ". SBOX = " + Integer.toBinaryString(intX));
             intX = bitPermutation(intX);
             System.out.println(i + ". BP = " + Integer.toBinaryString(intX));
@@ -49,11 +49,11 @@ public class SPN {
         }
         System.out.println("Verkürzte Runde");
         //verkürzte runde
-        arrX = intTOIntArray(intX);
-        arrX = sbox(arrX, inverse);
-        intX = intArryToInt(arrX);
+        arrX = intToIntArray(intX);
+        arrX = sBox(arrX, inverse);
+        intX = intArrayToInt(arrX);
         System.out.println("Verk. Runde SBOX = " + Integer.toBinaryString(intX));
-        intX = intArryToInt(arrX) ^ usedKeys[usedKeys.length - 1];
+        intX = intArrayToInt(arrX) ^ usedKeys[usedKeys.length - 1];
         System.out.println("Verk. Runde XOR = " + Integer.toBinaryString(intX));
 
         return intX;
@@ -62,7 +62,7 @@ public class SPN {
     public int[] generateSpnKeys(int fullKey) {
         int[] keys = new int[getAmountRound() + 1];
         for (int i = 0; i < 5; i++) {
-            int keyValue = (int) fullKey << getN() * i;
+            int keyValue = fullKey << getN() * i;
             keys[i] = keyValue >>> getN() * getN();
         }
         return keys;
@@ -84,7 +84,7 @@ public class SPN {
         return keyReserve;
     }
 
-    public int[] sbox(int[] a, boolean inverse) {
+    public int[] sBox(int[] a, boolean inverse) {
         for (int i = 0; i < a.length; i++) {
             a[i] = (inverse) ? sBoxReverseHashMap.get(a[i]) : sBoxHashMap.get(a[i]);
         }
@@ -108,49 +108,34 @@ public class SPN {
         return resultBitMask;
     }
 
-    public static int[] intTOIntArray(int a) {
-        int[] intArray = new int[4];
-        int blockStart = 4;
+    public int[] intToIntArray(int a) {
+        int[] intArray = new int[m];
+        int blockStart = n;
         for (int i = 0; i < intArray.length; i++) {
-            int actValue = a << blockStart++ * 4;
-            intArray[i] = actValue >>> 7 * 4;
+            int actValue = a << blockStart++ * n;
+            intArray[i] = actValue >>> 7 * n;
         }
         return intArray;
     }
 
-    public static int intArryToInt(int[] a) {
+    public int intArrayToInt(int[] a) {
         int result = a[0];
         for (int i = 1; i < a.length; i++) {
-            result = (result << 4) ^ a[i];
+            result = (result << n) ^ a[i];
         }
         return result;
     }
 
-//    private static int[] bitpermutationHashMap = {0, 4, 8, 12, 1, 5, 9, 13, 2, 6, 10, 14, 3, 7, 11, 15};
-
-    private HashMap<Integer, Integer> generateBitPermutationsHashMap(int[] bitBPValues) {
-        HashMap<Integer, Integer> hashMapBP = new HashMap<>();
-        for (int i = 0; i < bitBPValues.length; i++) {
-            hashMapBP.put(i, bitBPValues[i]);
-        }
-        return hashMapBP;
-    }
-
-    private HashMap<Integer, Integer> generateSBOXHashMap(int[] sBoxValues, boolean inverse) {
-        HashMap<Integer, Integer> hashSBOXMap = new HashMap<>();
-        for (int i = 0; i < sBoxValues.length; i++) {
+    private HashMap<Integer, Integer> generateHashMap(int[] arrToHashMap, boolean inverse) {
+        HashMap<Integer, Integer> newHashMap = new HashMap<>();
+        for (int i = 0; i < arrToHashMap.length; i++) {
             if (inverse) {
-                hashSBOXMap.put(sBoxValues[i], i);
+                newHashMap.put(arrToHashMap[i], i);
             } else {
-                hashSBOXMap.put(i, sBoxValues[i]);
+                newHashMap.put(i, arrToHashMap[i]);
             }
         }
-        return hashSBOXMap;
-    }
-
-
-    public HashMap<Integer, Integer> getBP() {
-        return this.bitpermutationHashMap;
+        return newHashMap;
     }
 
     public int getN() {

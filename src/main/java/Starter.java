@@ -1,27 +1,32 @@
 public class Starter {
 
     public static void main(String[] args) {
-        int r = 4;      //Rundenschlüssel
-        int n = 4;      //Anzahl Bit eines Blocks
-        int m = 4;      //Anzahl Blöcke
-        int s = 32;     //Länge des Schlüssel
-        int[] bitpermutationValues = {0, 4, 8, 12, 1, 5, 9, 13, 2, 6, 10, 14, 3, 7, 11, 15};
-int[] sBOXValues = {14, 4, 13, 1, 2, 15, 11, 8, 3, 10, 6, 12, 5, 9, 0, 7};
 
+        final int r = 4;      //Rundenschlüssel
+        final int n = 4;      //Anzahl Bit eines Blocks
+        final int m = 4;      //Anzahl Blöcke
+        final int s = 32;     //Länge des Schlüssel
+        int[] bitpermutationValues = new int[]{0, 4, 8, 12, 1, 5, 9, 13, 2, 6, 10, 14, 3, 7, 11, 15};
+        int[] sBOXValues = {14, 4, 13, 1, 2, 15, 11, 8, 3, 10, 6, 12, 5, 9, 0, 7};
 
-        // final int fullKey = 0b0011_1010_1001_0100_1101_0110_0011_1111;
+        final int fullkey = 0b0011_1010_1001_0100_1101_0110_0011_1111;
 
-        final int testKey = 0b0001_0001_0010_1000_1000_1100_0000_0000;
-        final int testX = 0b0001_0010_1000_1111;
+        //SPN wird initalisiert mit den nötigen Daten
+        SPN spn = new SPN(r,n,m,s, fullkey, bitpermutationValues, sBOXValues);
 
+        /* --- CTRD --- */
 
+        //CTRD wird initalisiert mit Daten und dem SPN-System
+        CTRD ctrd = new CTRD(spn);
 
-        SPN spn = new SPN(r,n,m,s, testKey, bitpermutationValues, sBOXValues);
+        String asciiText = "Hallo Pascal";
 
-        int y = spn.startSPN(testX, false);
+        //when
+        String y = ctrd.enCrypt(asciiText, 16);
 
-        System.out.println("y = " + Integer.toBinaryString(y));
+        String x = ctrd.deCrypt(y,16);
 
+        System.out.println(x);
 
         //Key generate show
 
