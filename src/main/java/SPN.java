@@ -1,5 +1,3 @@
-import java.nio.IntBuffer;
-
 import static java.lang.Integer.toBinaryString;
 
 public class SPN {
@@ -11,42 +9,38 @@ public class SPN {
 
     static int[] sboxValues = new int[]{14, 4, 13, 1, 2, 15, 11, 8, 3, 10, 6, 12, 5, 9, 0, 7};
 
-    public static int[] sbox(int[] a){
-        int[] b = new int[16];
-        for (int i = 0; i < a.length; i++) {
+    public static int sbox(int[] a){
+        int[] b = new int[4];
+        for (int i = 0; i < b.length; i++) {
             for (int j = 0; j < sboxValues.length; j++) {
                 if (a[i] == sboxValues[j]){
                     b[i] = sboxValues[i];
                 }
             }
         }
+
+        return convertToInt(b);
+    }
+
+    public static int bitpermutation(int a){
+        int[] arr = new int[]{0, 4, 8, 12, 1, 5, 9, 13, 2, 6, 10, 14, 3, 7, 11, 15};
+        int XOR;
+        int b = 0;
+
+        for (int i = 0; i < arr.length; i++) {
+
+            XOR = a << arr.length + i;
+
+            XOR = XOR >>> arr.length * 2 - 1;
+
+            XOR = XOR << arr.length - 1  - arr[i] ;
+
+            b = b ^ XOR;
+        }
         return b;
     }
 
-    public static int[] bitpermutation(int[] a){
-        int[] b = new int[16];
-
-        b[0] = a[0];
-        b[1] = a[4];
-        b[2] = a[8];
-        b[3] = a[12];
-        b[4] = a[1];
-        b[5] = a[5];
-        b[6] = a[9];
-        b[7] = a[13];
-        b[8] = a[2];
-        b[9] = a[6];
-        b[10] = a[10];
-        b[11] = a[14];
-        b[12] = a[3];
-        b[13] = a[7];
-        b[14] = a[11];
-        b[15] = a[15];
-
-        return b;
-    }
-
-    public static int key(int a){
+    public static int keyXOR(int a, int x){
 
         int s = 0;
 
@@ -66,7 +60,7 @@ public class SPN {
             case 4:
                 s = 0b1000_1100_0000_0000;
         }
-        return s;
+        return s^x;
     }
 
     public static int[] convertToIntArray(int a) {
@@ -93,49 +87,48 @@ public class SPN {
 
 
     public static String spn(int x){
-        int[] b1;
 
-        int a1 = (x ^ key(0));
-        //System.out.println(toBinaryString(a1));
+        int weisschritt = keyXOR(0, x);
+        System.out.println("XOR beim Weisschritt: " + toBinaryString(weisschritt));
 
-        b1 = sbox(convertToIntArray(a1));
-        //System.out.println(toBinaryString(convertToInt(b1)));
+        weisschritt = sbox(convertToIntArray(weisschritt));
+        System.out.println("SBOX beim Weisschritt: " + toBinaryString(weisschritt));
 
-        int[] b2 = bitpermutation(b1);
-        //System.out.println(toBinaryString(convertToInt(b2)));
+        int round1 = bitpermutation(weisschritt);
+        System.out.println("BP Runde 1: " + toBinaryString(weisschritt));
 
-        int a2 = convertToInt(b2) ^ key(1);
-        //System.out.println(toBinaryString(a2));
+        round1 = keyXOR(1, round1);
+        System.out.println("XOR Runde 1: " + toBinaryString(weisschritt));
 
-        b2 = sbox(convertToIntArray(a2));
-        //System.out.println(toBinaryString(convertToInt(b2)));
+        round1 = sbox(convertToIntArray(round1));
+        System.out.println("SBOX Runde 1: " + toBinaryString(weisschritt));
 
-        int[] b3 = bitpermutation(b2);
-        //System.out.println(toBinaryString(convertToInt(b3)));
+        int round2 = bitpermutation(round1);
 
-        int a3 = convertToInt(b3) ^ key(2);
-        //System.out.println(toBinaryString(a3));
 
-        b3 = sbox(convertToIntArray(a3));
-        //System.out.println(toBinaryString(convertToInt(b3)));
+        round2 = keyXOR(2, round2);
 
-        int[] b4 = bitpermutation(b3);
-        //System.out.println(toBinaryString(convertToInt(b4)));
 
-        int a4 = convertToInt(b4) ^ key(3);
-        //System.out.println(toBinaryString(a4));
+        round2 = sbox(convertToIntArray(round2));
 
-        b4 = sbox(convertToIntArray(a4));
-        //System.out.println(toBinaryString(convertToInt(b4)));
 
-        int a5 = convertToInt(b4) ^ key(4);
-        //System.out.println(toBinaryString(a5));
+        int round3 = bitpermutation(round2);
 
-        return toBinaryString(a5);
+
+        round3 = keyXOR(3, round3);
+
+
+        round3 = sbox(convertToIntArray(round3));
+
+
+        int verkürzteRunde = keyXOR(4, round3);
+
+
+        return toBinaryString(verkürzteRunde);
     }
 
     public static void main(String[] args) {
-        System.out.println("is " + spn( 0b0001_0010_1000_1111) + " equals " +  "1010 1110 1011 0100: " + (spn(35087) == "1010111010110100"));
+        System.out.println("is " + spn(  0b0001001010001111) + " equals " +  "1010111010110100: " + (spn(35087) == "1010111010110100"));
 
     }
 }
