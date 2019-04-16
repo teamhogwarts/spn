@@ -1,10 +1,9 @@
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class SPNTest {
 
@@ -61,7 +60,7 @@ class SPNTest {
                 , 0b0011101010010100};
 
         //then
-        assertArrayEquals(spn.getKeysReverse(), fullKeyStringReverse);
+        assertArrayEquals(spn.getKeysInverse(), fullKeyStringReverse);
 
     }
 
@@ -72,7 +71,7 @@ class SPNTest {
         int x = 0b1010_1111_0011_1100;
 
         //when
-        int[] arrX = spn.intToIntArray(x);
+        int[] arrX = spn.intToArray(x);
 
         //then
         assertEquals(0b1010, arrX[0]);
@@ -92,7 +91,7 @@ class SPNTest {
         int expect = 0b1010_1111_0011_1100;
 
         //when
-        int result = spn.intArrayToInt(intArray);
+        int result = spn.arrayToInt(intArray);
 
         //then
         assertEquals(expect, result);
@@ -167,28 +166,5 @@ class SPNTest {
         //then
         assertEquals(expected, result);
     }
-
-//    @Test
-//    void runSPNInverseTest() {
-//        //given
-//        final int testKey = 0b0001_0001_0010_1000_1000_1100_0000_0000;
-//        final int testX = 0b0001_0010_1000_1111;
-//        r = 2;
-//        n = 2;
-//        m = 2;
-//        s = 3;
-//        bitpermutationValues = new int[]{1, 0, 3, 2};
-//        sBOXValues = new int[]{0, 2, 1, 3};
-//
-//        SPN spnTestKey = new SPN(r, n, m, s, testKey, bitpermutationValues, sBOXValues);
-//
-//        //when
-//        int result = spnTestKey.startSPN(testX, true);
-//        int expected = 0b1010_1110_1011_0100;
-//
-//        //then
-//        assertEquals(expected, result);
-//
-//    }
 
 }

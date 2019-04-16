@@ -1,16 +1,32 @@
 import java.util.HashMap;
 
+/**
+ * @author Benjamin Brodwolf
+ * krysi FS-2019
+ * @version 1.0
+ */
 public class SPN {
     private int r;   //Rundenschlüssel
     private int n;   //Anzahl Bit eines Blocks
     private int m;   //Anzahl Blöcke
     private int s;   //Länge des Schlüssel in Bit
     private int[] keys; //Schlüssel-Reihenfolge bei ENCRYPT
-    private int[] keysReverse; //Schlüssel-Reihenfolge bei DECRYPT
+    private int[] keysInverse; //Schlüssel-Reihenfolge bei DECRYPT
     private HashMap<Integer, Integer> bitpermutationHashMap;
     private HashMap<Integer, Integer> sBoxHashMap;
-    private HashMap<Integer, Integer> sBoxReverseHashMap;
+    private HashMap<Integer, Integer> sBoxInverseHashMap;
 
+    /**
+     * Konstruktor - initialisiert und generiert alle nötigen Werten (Keys, SBOX, BP)
+     *
+     * @param r
+     * @param n
+     * @param m
+     * @param s
+     * @param fullKey
+     * @param bpValues
+     * @param sBoxValues
+     */
     public SPN(int r, int n, int m, int s, int fullKey, int[] bpValues, int[] sBoxValues) {
         this.r = r;
         this.n = n;
@@ -18,81 +34,97 @@ public class SPN {
         this.s = s;
         this.bitpermutationHashMap = generateHashMap(bpValues, false);
         this.sBoxHashMap = generateHashMap(sBoxValues, false);
-        this.sBoxReverseHashMap = generateHashMap(sBoxValues, true);
+        this.sBoxInverseHashMap = generateHashMap(sBoxValues, true);
         this.keys = generateSpnKeys(fullKey);
-        this.keysReverse = generateSpnKeysReverse();
-
-        for (int j = 0; j < keys.length; j++) {
-            System.out.println(j + "te Key = " + Integer.toBinaryString(keys[j]));
-        }
+        this.keysInverse = generateSpnKeysInverse();
     }
 
-
+    /**
+     * Ver- und Entschlüsselter gem. des SPN-Algorithmus.
+     * Kann auch mit den Inversen-Keys (boolean inverse) gestartet werden.
+     * @param x
+     * @param inverse
+     * @return Ver- oder Entschlüsselter-Wert (X oder bzw. Y)
+     */
     public int startSPN(int x, boolean inverse) {
+        // Falls eine Inverse-SPN abfolge sein sol, werden die Reverse-Keys benutzt - ansonsten die Regulären
+        int[] usedKeys = (inverse) ? keysInverse : keys;
 
-        int[] usedKeys = (inverse) ? getKeysReverse() : getKeys();
-        //initialer Weisschritt
+        // initialer Weisschritt
         int intX = usedKeys[0] ^ x;
-        System.out.println("Weisschritt XOR = " + Integer.toBinaryString(intX));
         int[] arrX;
-        //reguläre runde
+
+        // reguläre runde
         for (int i = 1; i < r; i++) {
-            arrX = intToIntArray(intX);
+            arrX = intToArray(intX);
             arrX = sBox(arrX, inverse);
-            intX = intArrayToInt(arrX);
-            System.out.println(i + ". SBOX = " + Integer.toBinaryString(intX));
+            intX = arrayToInt(arrX);
             intX = bitPermutation(intX);
-            System.out.println(i + ". BP = " + Integer.toBinaryString(intX));
             intX = intX ^ usedKeys[i];
-            System.out.println(i + ". Key = " + Integer.toBinaryString(usedKeys[i]));
-            System.out.println(i + ". XOR = " + Integer.toBinaryString(intX));
         }
-        System.out.println("Verkürzte Runde");
-        //verkürzte runde
-        arrX = intToIntArray(intX);
+
+        // verkürzte runde
+        arrX = intToArray(intX);
         arrX = sBox(arrX, inverse);
-        intX = intArrayToInt(arrX);
-        System.out.println("Verk. Runde SBOX = " + Integer.toBinaryString(intX));
-        intX = intArrayToInt(arrX) ^ usedKeys[usedKeys.length - 1];
-        System.out.println("Verk. Runde XOR = " + Integer.toBinaryString(intX));
+        intX = arrayToInt(arrX) ^ usedKeys[usedKeys.length - 1];
 
         return intX;
     }
 
+    /**
+     * Erstellt eine Array von Keys aus dem BitString gem. Anforderungen
+     * @param fullKey
+     * @return Array von Keys
+     */
     public int[] generateSpnKeys(int fullKey) {
-        int[] keys = new int[getAmountRound() + 1];
+        int[] keys = new int[r + 1];
         for (int i = 0; i < 5; i++) {
-            int keyValue = fullKey << getN() * i;
-            keys[i] = keyValue >>> getN() * getN();
+            int keyValue = fullKey << n * i;
+            keys[i] = keyValue >>> n * n;
         }
         return keys;
     }
 
-    public int[] generateSpnKeysReverse() {
+    /**
+     * Erstellt eine Array von Inverse-Keys aus den Regulären-Keys
+     *
+     * @return Array von Inverse-Keys
+     */
+    public int[] generateSpnKeysInverse() {
+        int[] keyRegular = keys;
+        int[] keyInverse = new int[keyRegular.length];
+        int lastIndex = keyRegular.length - 1;
 
-        int[] regKeys = getKeys();
-        int[] keyReserve = new int[regKeys.length];
-        int lastIndex = regKeys.length - 1;
+        keyInverse[0] = keyRegular[lastIndex];
+        keyInverse[lastIndex] = keyRegular[0];
 
-        keyReserve[0] = regKeys[lastIndex];
-        keyReserve[lastIndex] = regKeys[0];
-
-        for (int i = 1; i < regKeys.length - 1; i++) {
-            keyReserve[i] = bitPermutation(regKeys[lastIndex - i]);
+        for (int i = 1; i < keyRegular.length - 1; i++) {
+            keyInverse[i] = bitPermutation(keyRegular[lastIndex - i]);
         }
 
-        return keyReserve;
+        return keyInverse;
     }
 
+    /**
+     * Die SBOX
+     * @param a
+     * @param inverse
+     * @return Transformierte-Werte gem. SBOX
+     */
     public int[] sBox(int[] a, boolean inverse) {
         for (int i = 0; i < a.length; i++) {
-            a[i] = (inverse) ? sBoxReverseHashMap.get(a[i]) : sBoxHashMap.get(a[i]);
+            a[i] = (inverse) ? sBoxInverseHashMap.get(a[i]) : sBoxHashMap.get(a[i]);
         }
         return a;
     }
 
+    /**
+     * Die BitPermutation
+     * @param bits
+     * @return Transformierter-Wert gem. SBOX
+     */
     public int bitPermutation(final int bits) {
-        int higestBit = (getN() * getM());
+        int higestBit = (n * m);
         int resultBitMask = 0, checkBitValue;
 
         for (int i = 0; i < bitpermutationHashMap.size(); i++) {
@@ -108,7 +140,14 @@ public class SPN {
         return resultBitMask;
     }
 
-    public int[] intToIntArray(int a) {
+
+    /**
+     * Helfermethode, zerstückelt das n*m Bit-Muster in m Blöcke
+     *
+     * @param a
+     * @return m grosse Int-Blöcke
+     */
+    public int[] intToArray(int a) {
         int[] intArray = new int[m];
         int blockStart = n;
         for (int i = 0; i < intArray.length; i++) {
@@ -118,7 +157,13 @@ public class SPN {
         return intArray;
     }
 
-    public int intArrayToInt(int[] a) {
+    /**
+     * Analog zu "intToArray" vereint diese Helfermethode die Int-Blöcke zu einem ganzen int
+     *
+     * @param a
+     * @return n * m grosses Int
+     */
+    public int arrayToInt(int[] a) {
         int result = a[0];
         for (int i = 1; i < a.length; i++) {
             result = (result << n) ^ a[i];
@@ -126,6 +171,12 @@ public class SPN {
         return result;
     }
 
+    /**
+     * Generiet die HashMaps für die BitPermutation, SBOX sowie SBOX-Inverse.
+     * @param arrToHashMap
+     * @param inverse
+     * @return HashMap (BP, SBOX, SBOX-INVERSE)
+     */
     private HashMap<Integer, Integer> generateHashMap(int[] arrToHashMap, boolean inverse) {
         HashMap<Integer, Integer> newHashMap = new HashMap<>();
         for (int i = 0; i < arrToHashMap.length; i++) {
@@ -138,23 +189,15 @@ public class SPN {
         return newHashMap;
     }
 
-    public int getN() {
-        return this.n;
-    }
 
-    public int getM() {
-        return this.m;
-    }
-
-    public int getAmountRound() {
-        return this.r;
-    }
-
+    /*
+        Getters für Testzwecke
+     */
     public int[] getKeys() {
         return this.keys;
     }
 
-    public int[] getKeysReverse() {
-        return this.keysReverse;
+    public int[] getKeysInverse() {
+        return this.keysInverse;
     }
 }

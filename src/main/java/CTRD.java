@@ -1,54 +1,74 @@
 import java.util.Arrays;
 
+/**
+ * @author Benjamin Brodwolf
+ * krysi FS-2019
+ * @version 1.0
+ */
 public class CTRD {
 
     private int yMinus1;
-    private int[] Yi;
-    private int[] Xi;
-    private int length;
+    private int[] yi;
     private SPN system;
 
+    /**
+     * Konstruktor mit dem Verschlüsselungs-System
+     *
+     * @param system
+     */
     public CTRD(SPN system) {
         this.system = system;
     }
 
-    public String deCrypt(String y, int length) {
-        this.length = length;
+    /**
+     * Zerlegen des BitStrings Y in Blöcke der Länge "blockSize" zerlegen = y-1, y0, y1 ....yn-1
+     *
+     * @param Y
+     * @param blockSize
+     * @return
+     */
+    public static int[] disjointY(String Y, int blockSize) {
+        int amountOfBlocks = Y.length() / blockSize; // 128 / 16 = 8
+        int[] result = new int[amountOfBlocks];
 
-        int[] tempy = zerlegenVonY(y, length);
-
-        System.out.println("Y -------------------");
-        for (int i = 0; i < tempy.length; i++) {
-            System.out.println(Integer.toBinaryString(tempy[i]));
+        for (int i = 0; i < amountOfBlocks; i++) {
+            result[i] = Integer.parseInt(Y.substring(i * blockSize, i * blockSize + blockSize), 2);
         }
+        return result;
+    }
 
-        this.yMinus1 = tempy[0];
-        this.Yi = Arrays.copyOfRange(tempy, 1, tempy.length);
+    /**
+     * Methode welche den Algorithmus zum Entschlüsseln im CTR-Modus
+     * mit derm Verschlüsselungsystem SPN verwendet
+     *
+     * @param y
+     * @param blockSize
+     * @return
+     */
+    public String deCrypt(String y, int blockSize) {
 
-        int[] resultX = new int[Yi.length];
+        // zerlegen des Bitstrings in ein Int-Array
+        int[] tempY = disjointY(y, blockSize);
 
-        for (int i = 0; i < Yi.length; i++) {
-            int xi = (this.yMinus1 + i) % (1 << this.length); //(int) Math.pow(2, this.length);
-//            System.out.println(xi + " = y-1 + "+i+ " mod " + (int) Math.pow(2, this.length));
+        // herauspicken der benötigten "y-1"
+        this.yMinus1 = tempY[0];
 
-//            System.out.println("Start SPN mit: x"+ i + " = " + xi);
+        // bereitstellen von Variablen für die Iteration
+        this.yi = Arrays.copyOfRange(tempY, 1, tempY.length);
+        int[] resultX = new int[yi.length];
+
+        // Iteration des CTR-Modus mit dem SPN-Verschlüsselungssystem
+        for (int i = 0; i < yi.length; i++) {
+            int xi = (yMinus1 + i) % (1 << blockSize);
             xi = system.startSPN(xi, false);
-//            System.out.println("Ende SPN mit: x"+ i + " = " + xi + " / " + Integer.toBinaryString(xi));
-            xi = xi ^ Yi[i];
-//            System.out.println((xi ^ yi[i]) + " = x" + i + " XOR y" + i+ " (" + yi[i] + " / " + Integer.toBinaryString(yi[i]) +")");
+            xi = xi ^ yi[i];
             resultX[i] = xi;
-//            System.out.println("x" + i + " = " + resultX[i]);
-//            System.out.println(" -----------------------");
         }
 
-
-        // entfernen das letzte mit dem Pattern 1er gefüllt mit 0er
+        // entfernen des letzten Pattern 1 gefüllt mit 0er
         resultX[resultX.length - 1] = Integer.numberOfTrailingZeros(resultX[resultX.length - 1] + 1);
 
-        for (int x : resultX) {
-            System.out.println(Integer.toBinaryString(x));
-        }
-
+        // extrarieren der ASCII-Zeichen (8 Bit) aus den 16 Bit befüllten Integer.
         char[] chars = new char[resultX.length * 2];
         for (int i = 0; i < chars.length; i++) {
             chars[i] = (char) (resultX[i / 2] >>> 8);
@@ -57,91 +77,5 @@ public class CTRD {
         }
 
         return new String(chars).trim();
-    }
-
-
-
-    public String enCrypt(String asciiText, int length) {
-
-        // define the range of y-1
-        int max = 1 << length;
-        int min = 1;
-        int range = max - min + 1;
-        this.yMinus1 =  (int) (Math.random() * range) + min;
-        System.out.println("y-1 : " + Integer.toBinaryString(yMinus1));
-
-        // One String -> 14 Chars -> 7 Ints
-        char[] charArray = asciiText.toCharArray();
-
-        System.out.println(Arrays.toString(charArray));
-        int[] intArrayOfChars = new int[(charArray.length / 2) + 1];
-        for (int i = 0; i < charArray.length; i++) {
-            intArrayOfChars[i / 2] = (int) charArray[i] << 8;
-            i++;
-            intArrayOfChars[i / 2] += (int) charArray[i] | intArrayOfChars[i / 2];
-        }
-
-        System.out.println("intArray: " + Arrays.toString(intArrayOfChars));
-
-        for (int intArrayOfChar : intArrayOfChars) {
-            System.out.println(Integer.toBinaryString(intArrayOfChar));
-        }
-
-        // padding 1 gefüllt mit 0 bis durch 16 teilbar
-        int paddin = 0;
-        int secLastIntArray = intArrayOfChars[intArrayOfChars.length - 2];
-        int spacesOfZeros = Integer.numberOfTrailingZeros(secLastIntArray);
-
-        System.out.println("spaceOfZeros: " + spacesOfZeros + "  secLasInt: " + Integer.toBinaryString(secLastIntArray));
-        if (secLastIntArray > (1 << 8) && (spacesOfZeros > 0)) {
-            System.out.println("isGrösser und hat Platz für eine 1 ---> " + (1 << spacesOfZeros - 1));
-            intArrayOfChars[intArrayOfChars.length-2] = secLastIntArray | (1 << spacesOfZeros - 1);
-        } else {
-            intArrayOfChars[intArrayOfChars.length-1] = 0b1000_0000_0000_0000;
-        }
-
-        for (int intArrayOfChar : intArrayOfChars) {
-            System.out.println(Integer.toBinaryString(intArrayOfChar));
-        }
-
-        //
-        int effectiveLengthOfArray = 0;
-        for (int i = 0; i < intArrayOfChars.length; i++) {
-            if (intArrayOfChars[i] > 0) effectiveLengthOfArray++;
-        }
-
-        int[] resultY = new int[effectiveLengthOfArray];
-
-
-        // E (SPN, K) XOR y-1
-        for (int i = 0; i < resultY.length; i++) {
-            int yi = (this.yMinus1 + i) % (1 << this.length);
-            yi = system.startSPN(yi, false);
-            yi = yi ^ intArrayOfChars[i];
-            resultY[i] = yi;
-        }
-
-
-        System.out.println("ResultY: ");
-        String ouput = "";
-        for (int value : resultY) {
-            System.out.println(String.format("%16s", Integer.toBinaryString(value)).replace(' ', '0')  );
-            ouput += String.format("%16s", Integer.toBinaryString(value)).replace(' ', '0');
-        }
-
-
-        return ouput;
-    }
-
-
-    //zerlege Y in Blöcke der Länge "laenge" zerlegen = y-1, y0, y1 ....yn-1
-    public static int[] zerlegenVonY(String XY, int length) {
-        int amountOfBlocks = XY.length() / length; // 128 / 16 = 8
-        int[] result = new int[amountOfBlocks];
-
-        for (int i = 0; i < amountOfBlocks; i++) {
-            result[i] = Integer.parseInt(XY.substring(i * length, i * length + length), 2);
-        }
-        return result;
     }
 }
