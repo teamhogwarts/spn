@@ -1,7 +1,7 @@
 import java.util.HashMap;
 
 /**
- * @author Benjamin Brodwolf
+ * @author Benjamin Brodwolf, Nadia Kramer, Pascal Andermatt
  * krysi FS-2019
  * @version 1.0
  */
@@ -10,11 +10,13 @@ public class SPN {
     private int n;   //Anzahl Bit eines Blocks
     private int m;   //Anzahl Blöcke
     private int s;   //Länge des Schlüssel in Bit
-    private int[] keys; //Schlüssel-Reihenfolge bei ENCRYPT
-    private int[] keysInverse; //Schlüssel-Reihenfolge bei DECRYPT
-    private HashMap<Integer, Integer> bitpermutationHashMap;
-    private HashMap<Integer, Integer> sBoxHashMap;
-    private HashMap<Integer, Integer> sBoxInverseHashMap;
+    private int[] roundKeys; //Schlüssel-Reihenfolge bei ENCRYPT
+    private int[] roundKeysInverse; //Schlüssel-Reihenfolge bei DECRYPT
+    private HashMap<Integer, Integer> bitPermutation;
+    private HashMap<Integer, Integer> sBox;
+    private HashMap<Integer, Integer> sBoxInverse;
+    private int[] usedKeysForSpn;
+
 
     /**
      * Konstruktor - initialisiert und generiert alle nötigen Werten (Keys, SBOX, BP)
@@ -32,11 +34,11 @@ public class SPN {
         this.n = n;
         this.m = m;
         this.s = s;
-        this.bitpermutationHashMap = generateHashMap(bpValues, false);
-        this.sBoxHashMap = generateHashMap(sBoxValues, false);
-        this.sBoxInverseHashMap = generateHashMap(sBoxValues, true);
-        this.keys = generateSpnKeys(fullKey);
-        this.keysInverse = generateSpnKeysInverse();
+        this.bitPermutation = generateSpnComponent(bpValues, false);
+        this.sBox = generateSpnComponent(sBoxValues, false);
+        this.sBoxInverse = generateSpnComponent(sBoxValues, true);
+        this.roundKeys = generateRoundKeys(fullKey);
+        this.roundKeysInverse = generateSpnKeysInverse();
     }
 
     /**
@@ -48,41 +50,46 @@ public class SPN {
      */
     public int startSPN(int x, boolean inverse) {
         // Falls eine Inverse-SPN abfolge sein sol, werden die Reverse-Keys benutzt - ansonsten die Regulären
-        int[] usedKeys = (inverse) ? keysInverse : keys;
+        this.usedKeysForSpn = (inverse) ? roundKeysInverse : roundKeys;
 
-        // initialer Weisschritt
-        int intX = usedKeys[0] ^ x;
-        int[] arrX;
-
-        // reguläre runde
-        for (int i = 1; i < r; i++) {
-            arrX = intToArray(intX);
-            arrX = sBox(arrX, inverse);
-            intX = arrayToInt(arrX);
-            intX = bitPermutation(intX);
-            intX = intX ^ usedKeys[i];
-        }
-
-        // verkürzte runde
-        arrX = intToArray(intX);
-        arrX = sBox(arrX, inverse);
-        intX = arrayToInt(arrX) ^ usedKeys[usedKeys.length - 1];
+        int intX = initialSettingsStep(x); // usedKeys[0] ^ x;
+        intX = regularRounds(intX, inverse);
+        intX = shortRound(intX, inverse);
 
         return intX;
     }
 
+    private int initialSettingsStep(int x) {
+        return (usedKeysForSpn[0] ^ x);
+    }
+
+    private int regularRounds(int x, boolean inverse) {
+        for (int i = 1; i < r; i++) {
+            x = sBox(x, inverse);
+            x = bitPermutation(x);
+            x = x ^ usedKeysForSpn[i];
+        }
+        return x;
+    }
+
+    private int shortRound(int x, boolean inverse) {
+        x = sBox(x, inverse);
+        return (x ^ usedKeysForSpn[usedKeysForSpn.length - 1]);
+    }
+
+
     /**
      * Erstellt eine Array von Keys aus dem BitString gem. Anforderungen
-     * @param fullKey
+     * @param key
      * @return Array von Keys
      */
-    public int[] generateSpnKeys(int fullKey) {
-        int[] keys = new int[r + 1];
-        for (int i = 0; i < 5; i++) {
-            int keyValue = fullKey << n * i;
-            keys[i] = keyValue >>> n * n;
+    public int[] generateRoundKeys(int key) { //  0000 0000 0000 0000 1010_1001_0100_1101;
+        int[] roundKeys = new int[r + 1];
+        for (int i = 0; i < (r + 1); i++) {
+            int keyValue = key << n * i;
+            roundKeys[i] = keyValue >>> n * n;
         }
-        return keys;
+        return roundKeys;
     }
 
     /**
@@ -91,15 +98,14 @@ public class SPN {
      * @return Array von Inverse-Keys
      */
     public int[] generateSpnKeysInverse() {
-        int[] keyRegular = keys;
-        int[] keyInverse = new int[keyRegular.length];
-        int lastIndex = keyRegular.length - 1;
+        int[] keyInverse = new int[roundKeys.length];
+        int lastIndex = roundKeys.length - 1;
 
-        keyInverse[0] = keyRegular[lastIndex];
-        keyInverse[lastIndex] = keyRegular[0];
+        keyInverse[0] = roundKeys[lastIndex];
+        keyInverse[lastIndex] = roundKeys[0];
 
-        for (int i = 1; i < keyRegular.length - 1; i++) {
-            keyInverse[i] = bitPermutation(keyRegular[lastIndex - i]);
+        for (int i = 1; i < lastIndex; i++) {
+            keyInverse[i] = bitPermutation(roundKeys[lastIndex - i]);
         }
 
         return keyInverse;
@@ -107,15 +113,18 @@ public class SPN {
 
     /**
      * Die SBOX
-     * @param a
+     * @param initVector
      * @param inverse
      * @return Transformierte-Werte gem. SBOX
      */
-    public int[] sBox(int[] a, boolean inverse) {
-        for (int i = 0; i < a.length; i++) {
-            a[i] = (inverse) ? sBoxInverseHashMap.get(a[i]) : sBoxHashMap.get(a[i]);
+    public int sBox(int initVector, boolean inverse) {
+        int[] arr = intToArray(initVector);
+
+        for (int i = 0; i < arr.length; i++) {
+            arr[i] = (inverse) ? sBoxInverse.get(arr[i]) : sBox.get(arr[i]);
         }
-        return a;
+
+        return arrayToInt(arr);
     }
 
     /**
@@ -127,16 +136,18 @@ public class SPN {
         int higestBit = (n * m);
         int resultBitMask = 0, checkBitValue;
 
-        for (int i = 0; i < bitpermutationHashMap.size(); i++) {
+        for (int i = 0; i < bitPermutation.size(); i++) {
             higestBit--;
+
             checkBitValue = bits & (1 << higestBit);
 
-            checkBitValue = (i > bitpermutationHashMap.get(i)) ?
-                    checkBitValue << Math.abs(bitpermutationHashMap.get(i) - i) :
-                    checkBitValue >>> (bitpermutationHashMap.get(i) - i);
+            checkBitValue = (i > bitPermutation.get(i)) ?
+                    checkBitValue << i - bitPermutation.get(i) :
+                    checkBitValue >>> (bitPermutation.get(i) - i);
 
             resultBitMask = resultBitMask ^ checkBitValue;
         }
+
         return resultBitMask;
     }
 
@@ -166,38 +177,38 @@ public class SPN {
     public int arrayToInt(int[] a) {
         int result = a[0];
         for (int i = 1; i < a.length; i++) {
-            result = (result << n) ^ a[i];
+            result = (result << n) | a[i];
         }
         return result;
     }
 
     /**
-     * Generiet die HashMaps für die BitPermutation, SBOX sowie SBOX-Inverse.
-     * @param arrToHashMap
+     * Generiet die BitPermutation, SBOX sowie SBOX-Inverse.
+     * @param initialComponent
      * @param inverse
      * @return HashMap (BP, SBOX, SBOX-INVERSE)
      */
-    private HashMap<Integer, Integer> generateHashMap(int[] arrToHashMap, boolean inverse) {
-        HashMap<Integer, Integer> newHashMap = new HashMap<>();
-        for (int i = 0; i < arrToHashMap.length; i++) {
+    private HashMap<Integer, Integer> generateSpnComponent(int[] initialComponent, boolean inverse) {
+        HashMap<Integer, Integer> finalSpnComponent = new HashMap<>();
+        for (int i = 0; i < initialComponent.length; i++) {
             if (inverse) {
-                newHashMap.put(arrToHashMap[i], i);
+                finalSpnComponent.put(initialComponent[i], i);
             } else {
-                newHashMap.put(i, arrToHashMap[i]);
+                finalSpnComponent.put(i, initialComponent[i]);
             }
         }
-        return newHashMap;
+        return finalSpnComponent;
     }
 
 
     /*
         Getters für Testzwecke
      */
-    public int[] getKeys() {
-        return this.keys;
+    public int[] getRoundKeys() {
+        return this.roundKeys;
     }
 
-    public int[] getKeysInverse() {
-        return this.keysInverse;
+    public int[] getRoundKeysInverse() {
+        return this.roundKeysInverse;
     }
 }

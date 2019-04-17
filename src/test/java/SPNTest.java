@@ -46,7 +46,7 @@ class SPNTest {
                 , 0b1101011000111111};
 
         //then
-        assertArrayEquals(spn.getKeys(), fullKeyStringRegular);
+        assertArrayEquals(spn.getRoundKeys(), fullKeyStringRegular);
     }
 
     @Test
@@ -60,7 +60,7 @@ class SPNTest {
                 , 0b0011101010010100};
 
         //then
-        assertArrayEquals(spn.getKeysInverse(), fullKeyStringReverse);
+        assertArrayEquals(spn.getRoundKeysInverse(), fullKeyStringReverse);
 
     }
 
@@ -95,34 +95,6 @@ class SPNTest {
 
         //then
         assertEquals(expect, result);
-    }
-
-    @Test
-    void sboxTest() {
-        //given
-        int[] actual = new int[]{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
-        int[] expected = new int[]{14, 4, 13, 1, 2, 15, 11, 8, 3, 10, 6, 12, 5, 9, 0, 7};
-
-        //when
-        int[] spnSBOXED = spn.sBox(actual, false);
-
-        //then
-        assertEquals(spnSBOXED.length, 16);
-        assertArrayEquals(spnSBOXED, expected);
-    }
-
-    @Test
-    void sboxReversTest() {
-        //given
-        int[] actual = new int[]{14, 4, 13, 1, 2, 15, 11, 8, 3, 10, 6, 12, 5, 9, 0, 7};
-        int[] expected = new int[]{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
-
-        //when
-        int[] spnSBOXED = spn.sBox(actual, true);
-
-        //then
-        assertEquals(spnSBOXED.length, 16);
-        assertArrayEquals(spnSBOXED, expected);
     }
 
     @Test

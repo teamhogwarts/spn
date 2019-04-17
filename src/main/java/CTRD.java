@@ -1,7 +1,7 @@
 import java.util.Arrays;
 
 /**
- * @author Benjamin Brodwolf
+ * @author Benjamin Brodwolf, Nadia Kramer, Pascal Andermatt
  * krysi FS-2019
  * @version 1.0
  */
